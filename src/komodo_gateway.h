@@ -1,5 +1,5 @@
 /******************************************************************************
- * Copyright © 2014-2018 The SuperNET Developers.                             *
+ * Copyright © 2014-2019 The SuperNET Developers.                             *
  *                                                                            *
  * See the AUTHORS, DEVELOPER-AGREEMENT and LICENSE files at                  *
  * the top-level directory of this distribution for the individual copyright  *
@@ -15,6 +15,8 @@
 
 // paxdeposit equivalent in reverse makes opreturn and KMD does the same in reverse
 #include "komodo_defs.h"
+
+int32_t MarmaraValidateCoinbase(int32_t height,CTransaction tx);
 
 int32_t pax_fiatstatus(uint64_t *available,uint64_t *deposited,uint64_t *issued,uint64_t *withdrawn,uint64_t *approved,uint64_t *redeemed,char *base)
 {
@@ -685,6 +687,14 @@ int32_t komodo_check_deposit(int32_t height,const CBlock& block,uint32_t prevtim
                     }
                 }
             }
+        }
+    }
+    if ( height > 0 && ASSETCHAINS_MARMARA != 0 && (height & 1) == 0 )
+    {
+        if ( MarmaraValidateCoinbase(height,block.vtx[0]) < 0 )
+        {
+            fprintf(stderr,"MARMARA error ht.%d constrains even height blocks to pay 100%% to CC in vout0 with opreturn\n",height);
+            return(-1);
         }
     }
     // we don't want these checks in VRSC, leave it at the Sapling upgrade
